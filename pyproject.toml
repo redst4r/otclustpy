@@ -1,0 +1,19 @@
+[project]
+name = "otclust"
+version = "0.1.0"
+description = "Python implementation of the OTclust R package for assesing cluster stability via Optimal transport"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=2.1.1",
+    "pandas>=2.2.3",
+    "pot>=0.9.4",
+    "tqdm>=4.66.5",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.3.3",
+    "ruff>=0.6.8",
+    "scikit-learn>=1.5.2",
+]
