@@ -4,24 +4,24 @@ import pandas as pd
 import numpy as np
 
 
-def normalize_each_row(df):
+def normalize_each_row(df: pd.DataFrame):
     "weird pandas stuff"
     return df.div(df.sum(1), axis=0)
 
 
-def cluster_assignment_matrix(bs):
+def cluster_assignment_matrix(bs: pd.Series):
     """
     turn the vector into a 1hot matrix
     """
     enc = OneHotEncoder()
-    posterior_cluster_matrix = enc.fit_transform(bs.km.values.reshape(-1, 1)).toarray()
+    posterior_cluster_matrix = enc.fit_transform(bs.values.reshape(-1, 1)).toarray()
     posterior_cluster_matrix = pd.DataFrame(
         posterior_cluster_matrix, columns=enc.categories_[0]
     )  # weird categories is a list of array
     return posterior_cluster_matrix
 
 
-def get_posterior_clustermatrix(reference_partition, bs_results):
+def get_posterior_clustermatrix(reference_partition: pd.Series, bs_results):
     """
     given a bunch of bootstrapped clusterings and a reference partition,
     how stable is that reference partition?
@@ -30,7 +30,7 @@ def get_posterior_clustermatrix(reference_partition, bs_results):
     assignments_in_ref = np.zeros(
         (
             reference_partition.shape[0],
-            len(reference_partition.km.unique()),
+            len(reference_partition.unique()),
         )  # #data x #clusters in ref
     )
     assignments_in_ref = pd.DataFrame(
@@ -50,25 +50,25 @@ def get_posterior_clustermatrix(reference_partition, bs_results):
 
         # each row sums to one now, i.e. of the cluster_i how much of it maps to which reference-cluster
         Gamma_row = normalize_each_row(M)
-        Gamma_col = normalize_each_row(M.T).T
+        # Gamma_col = normalize_each_row(M.T).T
 
         # 1-hot membership matrix
         assignment_matrix = cluster_assignment_matrix(bs)
         assignment_matrix.index = (
-            bs.sampleix
+            bs.index
         )  # so we can keep track of individual datapoints
         assert all(assignment_matrix.columns.values == Gamma_row.index.values)
 
         # where do those cells map in the reference
         assignment_in_ref_tmp = assignment_matrix @ Gamma_row
         assignment_in_ref_tmp.index = (
-            bs.sampleix
+            bs.index
         )  # so we can keep track of individual datapoints
         assignments_in_ref = assignments_in_ref.add(assignment_in_ref_tmp, fill_value=0)
 
     # normlize the final matrix of data x ref cluster
     # essentially the frequency of a datapoitn belonging to reference cluster i
     assignments_in_ref = assignments_in_ref.div(assignments_in_ref.sum(1), axis=0)
-    assignments_in_ref["ground_truth"] = reference_partition.km
+    assignments_in_ref["ground_truth"] = reference_partition
 
     return assignments_in_ref

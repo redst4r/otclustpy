@@ -6,10 +6,6 @@ from otclust.otclust import OTClust
 from otclust.consensus import get_posterior_clustermatrix
 
 
-def test_main():
-    assert True
-
-
 def test_full():
     # some toy data
     d = 2
@@ -33,7 +29,8 @@ def test_full():
     # create bootstraps
     percent = 0.9
     bs_results = []
-    for i in range(10):
+    n_bs = 10
+    for i in range(n_bs):
         ix_sub = np.random.choice(len(x), int(len(x) * percent), replace=False)
         x_bs = x[ix_sub]
         # y_bs = y[ix_sub]
@@ -42,10 +39,13 @@ def test_full():
         nclust = 3
         df_cluster = do_cluster(x_bs, nclust)
         df_cluster["sampleix"] = ix_sub
-        bs_results.append(df_cluster)
+        bs_results.append(df_cluster.set_index("sampleix").km)
 
     c = OTClust(bs_results)
     D = c.calculate_bs_distances()
+
+    assert D.shape[0] == n_bs * n_bs
+    assert D.shape[1] == 3
 
     get_posterior_clustermatrix(
         reference_partition=bs_results[0], bs_results=bs_results[1:]

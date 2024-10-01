@@ -7,7 +7,9 @@ import tqdm
 import pandas as pd
 
 
-def ot_distance(bs1, bs2):
+def ot_distance(bs1: pd.Series, bs2: pd.Series):
+    assert isinstance(bs1, pd.Series)
+    assert isinstance(bs2, pd.Series)
     """
     Compare the similarity of the two clusterings using OT.
 
@@ -19,15 +21,15 @@ def ot_distance(bs1, bs2):
     - ot_matrix: optimal transport plan/matrix
     """
     # need to restrict to sasmpels that got clustered in both bs
-    shared = set(bs1.sampleix) & set(bs2.sampleix)
+    shared = set(bs1.index) & set(bs2.index)
 
-    bs1_tmp = bs1[bs1.sampleix.isin(shared)]
-    bs2_tmp = bs2[bs2.sampleix.isin(shared)]
+    bs1_tmp = bs1[bs1.index.isin(shared)]
+    bs2_tmp = bs2[bs2.index.isin(shared)]
 
     df_jac_flat = jaccard_matrix(bs1_tmp, bs2_tmp)
 
-    weight1 = bs1_tmp.km.value_counts().to_dict()
-    weight2 = bs2_tmp.km.value_counts().to_dict()
+    weight1 = bs1_tmp.value_counts().to_dict()
+    weight2 = bs2_tmp.value_counts().to_dict()
 
     ot_instance = OTProblem(df_jac_flat, weight1, weight2)
     ot_matrix, ot_d = ot_instance.solve()
@@ -56,6 +58,9 @@ def similarity_distance(ot_instance: OTProblem):
 
 class OTClust:
     def __init__(self, bootstrapped_clusterings):
+        for bs in bootstrapped_clusterings:
+            assert isinstance(bs, pd.Series)
+
         self.bs_results = bootstrapped_clusterings
 
     def calculate_bs_distances(self):
@@ -74,4 +79,9 @@ class OTClust:
             # reverse
             D.append({"i": j, "j": i, "distance": dot})
 
+        # diagnoal
+        for i in range(n_bootstraps):
+            D.append({"i": i, "j": i, "distance": 0})
+
         D = pd.DataFrame(D)
+        return D
