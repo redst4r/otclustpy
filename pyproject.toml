@@ -1,5 +1,5 @@
 [project]
-name = "otclust"
+name = "otclustpy"
 version = "0.1.0"
 description = "Python implementation of the OTclust R package for assesing cluster stability via Optimal transport"
 readme = "README.md"

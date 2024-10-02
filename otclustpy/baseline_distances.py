@@ -16,7 +16,7 @@ def jaccard_matrix(bs1: pd.Series, bs2: pd.Series):
 
     df_distance = []
 
-    for c1, c2 in itertools.product([bs1.unique(), bs2.unique()]):
+    for c1, c2 in itertools.product(bs1.unique(), bs2.unique()):
         j = _jac(
             bs1[bs1 == c1].index,
             bs2[bs2 == c2].index,

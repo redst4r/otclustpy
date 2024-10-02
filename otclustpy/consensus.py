@@ -31,7 +31,7 @@ def get_posterior_clustermatrix(reference_partition: pd.Series, bs_results):
     assignments_in_ref = pd.DataFrame(
         np.zeros((reference_partition.shape[0], len(reference_partition.unique()))),
         index=reference_partition.index,
-        columns=reference_partition.cat.categories.values,
+        columns=reference_partition.unique(),
     )
 
     for bs in bs_results:

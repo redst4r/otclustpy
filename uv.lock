@@ -79,7 +79,7 @@ wheels = [
 ]
 
 [[package]]
-name = "otclust"
+name = "otclustpy"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

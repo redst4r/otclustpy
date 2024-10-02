@@ -8,12 +8,11 @@ import pandas as pd
 
 
 def ot_distance(bs1: pd.Series, bs2: pd.Series):
-
-    """ 
+    """
     Optimal transport distance between the two clusterings.
     Base distance (between two clusters) is the Jaccard-index, i.e.
     how many samples are shared by the two clusters.
-    """ 
+    """
     assert isinstance(bs1, pd.Series)
     assert isinstance(bs2, pd.Series)
     """

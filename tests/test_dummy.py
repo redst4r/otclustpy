@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 from sklearn.mixture import GaussianMixture
 from sklearn.cluster import KMeans
-from otclust.otclust import OTClust
-from otclust.consensus import get_posterior_clustermatrix
+from otclustpy.otclust import OTClust
+from otclustpy.consensus import get_posterior_clustermatrix
 
 
 def test_full():
