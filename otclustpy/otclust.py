@@ -5,6 +5,7 @@ import numpy as np
 import itertools
 import tqdm
 import pandas as pd
+from typing import List
 
 
 def ot_distance(bs1: pd.Series, bs2: pd.Series):
@@ -49,7 +50,7 @@ def similarity_distance(ot_instance: OTProblem):
     :param ot_instance: instance of an OT problem
     """
 
-    dmatrix, w1, w2 = ot_instance.get_canonical_inputs()
+    dmatrix, w1, w2 = ot_instance._get_canonical_inputs()
 
     # ot distance
     d = ot.emd2(w1, w2, dmatrix.values)
@@ -62,13 +63,13 @@ def similarity_distance(ot_instance: OTProblem):
 
 
 class OTClust:
-    def __init__(self, bootstrapped_clusterings):
+    def __init__(self, bootstrapped_clusterings: List[pd.Series]):
         for bs in bootstrapped_clusterings:
             assert isinstance(bs, pd.Series)
 
         self.bs_results = bootstrapped_clusterings
 
-    def calculate_bs_distances(self):
+    def calculate_bs_distances(self) -> pd.DataFrame:
         """
         calcualtes the distance between all bootstraps, returning a #bs x #bs matrix
         """
@@ -88,5 +89,30 @@ class OTClust:
         for i in range(n_bootstraps):
             D.append({"i": i, "j": i, "distance": 0})
 
-        D = pd.DataFrame(D)
-        return D
+        return pd.DataFrame(D)
+
+    def raincloud_jaccard(self, reference_clustering: pd.Series) -> pd.DataFrame:
+        """For each cluster C in the reference, compare
+        it against each bootstrap i and each cluster c_ij in that bootstrap
+        via Jaccard and find the best (most optimistic) match:  max_j Jac(C, C_ij)
+
+        If a cluster is highly stable it'll have a good match (Jac) across the majority of bootstraps
+
+        simply plot by
+        `pn.ggplot(df_rain) + pn.aes(x='ref_cluster', y='max_jaccard_similarity') + pn.geom_jitter()`
+        """
+        df_rain = []
+        for bs in tqdm.tqdm(self.bs_results):
+            J_distance = jaccard_matrix(reference_clustering, bs)
+            J_distance["jaccard_similarity"] = 1 - J_distance["base_distance"]
+
+            # get the maximum jac similarity of each reference cluster (the most optimistic/best mapping)
+            tmp = J_distance.groupby("source")["jaccard_similarity"].max()
+            for ref_clust, jj in tmp.to_dict().items():
+                df_rain.append(
+                    {
+                        "ref_cluster": ref_clust,
+                        "max_jaccard_similarity": jj,
+                    }
+                )
+        return pd.DataFrame(df_rain)

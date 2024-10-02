@@ -9,7 +9,9 @@ def _jac(a, b):
 def jaccard_matrix(bs1: pd.Series, bs2: pd.Series):
     """
     for each pair of clusters across bootstraps:
-    what the jaccard overlap, i.e frcation of samples that overlap
+    what the jaccard *distance*, i.e 1-Jaccard
+
+    return a *flat* dataframe, each row being a (cluster1, cluster2, jacc) tuple
     """
     assert isinstance(bs1, pd.Series)
     assert isinstance(bs2, pd.Series)

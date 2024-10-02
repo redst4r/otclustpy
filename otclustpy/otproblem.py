@@ -1,6 +1,7 @@
 import ot
 import pandas as pd
 import numpy as np
+from typing import Tuple
 
 
 class OTProblem:
@@ -40,7 +41,7 @@ class OTProblem:
 
         return (self.baseline_dist, weight1, weight2)
 
-    def solve(self):
+    def solve(self) -> Tuple[pd.DataFrame, float]:
         """
         Solve the OT problem at hand
 
