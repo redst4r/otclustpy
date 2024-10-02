@@ -27,14 +27,11 @@ def get_posterior_clustermatrix(reference_partition: pd.Series, bs_results):
     how stable is that reference partition?
     """
 
-    assignments_in_ref = np.zeros(
-        (
-            reference_partition.shape[0],
-            len(reference_partition.unique()),
-        )  # #data x #clusters in ref
-    )
+    # data x #clusters in ref
     assignments_in_ref = pd.DataFrame(
-        assignments_in_ref, index=np.arange(reference_partition.shape[0])
+        np.zeros((reference_partition.shape[0], len(reference_partition.unique()))),
+        index=reference_partition.index,
+        columns=reference_partition.cat.categories.values,
     )
 
     for bs in bs_results:
@@ -64,6 +61,12 @@ def get_posterior_clustermatrix(reference_partition: pd.Series, bs_results):
         assignment_in_ref_tmp.index = (
             bs.index
         )  # so we can keep track of individual datapoints
+
+        # need to have the same column odrder!!
+        assignment_in_ref_tmp = assignment_in_ref_tmp[assignments_in_ref.columns]
+        assert all(assignments_in_ref.columns == assignment_in_ref_tmp.columns)
+
+        # add to the total
         assignments_in_ref = assignments_in_ref.add(assignment_in_ref_tmp, fill_value=0)
 
     # normlize the final matrix of data x ref cluster
