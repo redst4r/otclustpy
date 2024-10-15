@@ -103,7 +103,13 @@ class OTClust:
         """
         df_rain = []
         for bs in tqdm.tqdm(self.bs_results):
-            J_distance = jaccard_matrix(reference_clustering, bs)
+            # note: for the jaccard to make sense we need to restrict to common samples
+            shared = set(reference_clustering.index) & set(bs.index)
+
+            bs1_tmp = reference_clustering[reference_clustering.index.isin(shared)]
+            bs2_tmp = bs[bs.index.isin(shared)]
+
+            J_distance = jaccard_matrix(bs1_tmp, bs2_tmp)
             J_distance["jaccard_similarity"] = 1 - J_distance["base_distance"]
 
             # get the maximum jac similarity of each reference cluster (the most optimistic/best mapping)
